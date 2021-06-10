@@ -1,4 +1,22 @@
-#! /bin/sh
+#! /bin/bash
+#
+# MikoPBX - free phone system for small business
+# Copyright © 2017-2021 Alexey Portnov and Nikolay Beketov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this program.
+# If not, see <https://www.gnu.org/licenses/>.
+#
+
 #
 # $Id$
 #
@@ -14,7 +32,6 @@ fi;
 
 usage() {
 	echo "$0: a script to install distribution-specific prerequirement"
-	echo 'Revision: $Id$'
 	echo ""
 	echo "Usage: $0:                    Shows this message."
 	echo "Usage: $0 test                Prints commands it is about to run."
@@ -23,33 +40,30 @@ usage() {
 }
 
 # Basic build system:
-PACKAGES_DEBIAN="build-essential pkg-config"
+PACKAGES_DEBIAN="curl dialog build-essential pkg-config"
 # Asterisk: basic requirements:
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libedit-dev libjansson-dev libsqlite3-dev uuid-dev libxml2-dev"
 # Asterisk: for addons:
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libspeex-dev libspeexdsp-dev libogg-dev libvorbis-dev libasound2-dev portaudio19-dev libcurl4-openssl-dev xmlstarlet bison flex"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libpq-dev unixodbc-dev libneon27-dev libgmime-2.6-dev liblua5.2-dev liburiparser-dev libxslt1-dev libssl-dev"
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN libmysqlclient-dev libbluetooth-dev libradcli-dev freetds-dev libosptk-dev libjack-jackd2-dev bash"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN libbluetooth-dev libradcli-dev freetds-dev libosptk-dev libjack-jackd2-dev bash"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libsnmp-dev libiksemel-dev libcorosync-common-dev libcpg-dev libcfg-dev libnewt-dev libpopt-dev libical-dev libspandsp-dev"
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN libresample1-dev libc-client2007e-dev binutils-dev libsrtp0-dev libsrtp2-dev libgsm1-dev doxygen graphviz zlib1g-dev libldap2-dev"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN libresample1-dev libc-client2007e-dev binutils-dev libsrtp2-dev libsrtp2-dev libgsm1-dev doxygen graphviz zlib1g-dev libldap2-dev"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libcodec2-dev libfftw3-dev libsndfile1-dev libunbound-dev"
 # Asterisk: for the unpackaged below:
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN wget subversion"
 # Asterisk: for ./configure --with-pjproject-bundled:
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN bzip2 patch python-dev"
-
-KVERS=`uname -r`
-# libvpb-dev 
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN vlan git ntp sqlite3 curl w3m re2c lame fail2ban sngrep tcpdump msmtp beanstalkd lua5.1-dev liblua5.1-0 libtonezone-dev libevent-dev libyaml-dev"
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN php${PHP_VERSION} php${PHP_VERSION}-mbstring php${PHP_VERSION}-fpm php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-curl php${PHP_VERSION}-dev php${PHP_VERSION}-yaml"
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN php${PHP_VERSION}-bcmath "
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN linux-headers-${KVERS}"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN bzip2 patch python-dev vlan git ntp sqlite3 curl w3m re2c lame"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN fail2ban sngrep tcpdump msmtp beanstalkd lua5.1-dev liblua5.1-0 libtonezone-dev libevent-dev libyaml-dev"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN php${PHP_VERSION} php${PHP_VERSION}-mbstring php${PHP_VERSION}-fpm php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-curl"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN php${PHP_VERSION}-dev php${PHP_VERSION}-yaml php${PHP_VERSION}-bcmath "
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN linux-headers-$(uname -r)"
 
 JANSSON_VER=2.12
 
 case "$1" in
 test)
-	testcmd=echo
+	testcmd='echo';
 	;;
 install)
 	testcmd=''
@@ -67,121 +81,70 @@ install-unpackaged)
 	;;
 esac
 
-in_test_mode() {
-	test "$testcmd" != ''
-}
-
 check_installed_debs() {
 	for pack in "$@" ; do
 		tocheck="${tocheck} ^${pack}$ ~P^${pack}$"
 	done
-	pkgs=$(aptitude -F '%c %p' search ${tocheck} 2>/dev/null | awk '/^p/{print $2}')
+
+	pkgs=$(aptitude -F '%c %p' search "${tocheck}" 2>/dev/null | awk '/^p/{print $2}')
 	
-	echo $pkgs;
+	echo "$pkgs";
 	if [ ${#pkgs} -ne 0 ]; then
-		echo $pkgs | sed -r -e "s/ ?[^ :]+:i386//g"
+		echo "$pkgs" | sed -r -e "s/ ?[^ :]+:i386//g"
 	fi
 }
 
 check_installed_equery() {
 	for pack in "$@"
 	do
-		# equery --quiet list $pack
-		# is slower and
-		# would require the optional app-portage/gentoolkit
-		# /var/lib/portage/world would be the non-dep list
-		pack_with_version=${pack/:/-} # replace a possible version with '-'
-		if ! ls -d /var/db/pkg/${pack_with_version}* >/dev/null 2>/dev/null
-		then echo $pack
+		pack_with_version="${pack/:/-}" # replace a possible version with '-'
+		if ! ls -d "/var/db/pkg/${pack_with_version}"* >/dev/null 2>/dev/null
+		then echo "$pack"
 		fi
 	done
 }
-
-check_installed_pacman() {
-	for pack in "$@"
-	do
-		if ! pacman -Q --explicit $pack >/dev/null 2>/dev/null
-		then echo $pack
-		fi
-	done
-}
-
-check_installed_pkgs() {
-	for pack in "$@"
-	do
-		if [ `pkg_info -a | grep $pack | wc -l` = 0 ]; then
-		echo $pack
-		fi
-	done
-}
-
-check_installed_fpkgs() {
-	for pack in "$@"
-	do
-		if [ `pkg info -a | grep $pack | wc -l` = 0 ]; then
-		echo $pack
-		fi
-	done
-}
-
-check_installed_zypper() {
-	for pack in "$@"
-	do
-		if ! zypper se -ixnC $pack >/dev/null 2>/dev/null
-		then echo $pack
-		fi
-	done
-}
-
 # Create ProgressBar function
 # Input is currentState($1) and totalState($2)
 ProgressBar() {
 	# Process data
-    _progress=`echo "scale=1; 100*${1}/${2}" | busybox bc | sed -e 's/^\./0./' -e 's/^-\./-0./' )`;
-    _done=`echo "scale=1; 4*${_progress}/10" | busybox bc`;
-    _left=`echo "scale=1; 40 - $_done" | busybox bc`;
+  _progress=$(echo "scale=1; 100*${1}/${2}" | busybox bc | sed -e 's/^\./0./' -e 's/^-\./-0./');
+  _done=$(echo "scale=1; 4*${_progress}/10" | busybox bc);
+  _left=$(echo "scale=1; 40 - $_done" | busybox bc);
 
 	# Build progressbar string lengths
-    _fill=$(printf "%${_done}s" | tr ' ' '#')
-    _empty=$(printf "%${_left}s")
+  _fill=$(printf "%${_done}s" | tr ' ' '#')
+  _empty=$(printf "%${_left}s")
 	
 	# Build progressbar strings and print the ProgressBar line
-	printf "\r%150s"
+	# shellcheck disable=SC2183
+	printf "\r%150s";
+
 	printf "\rProgress : [${_fill}${_empty}] ${_progress}%%. Now installing \e[1;32m${3}\e[0m. "
 }
 
 handle_debian() {
-	
-	apt -y install lsb-release apt-transport-https ca-certificates 
+	apt -y install lsb-release apt-transport-https ca-certificates > /dev/null 2> /dev/null;
+	phpListFile='/etc/apt/sources.list.d/php.list';
+	if [ ! -f "$phpListFile" ]; then
     wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-    echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list
-	
+    echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee "$phpListFile"
+  fi;
 	if ! [ -x "$(command -v aptitude)" ]; then
 		apt-get install -y aptitude > /dev/null
 	fi
-	
-	if [ x"$testcmd" = "x" ] ; then
-		echo "Check installed debs..."
-	fi
-	extra_packs=`check_installed_debs $PACKAGES_DEBIAN`
-	if [ x"$testcmd" = "x" ] ; then
-		echo "Aptitude update..."
-	fi
-	$testcmd apt-get update > /dev/null
+
+	extra_packs=$(check_installed_debs "$PACKAGES_DEBIAN")
+	apt-get update > /dev/null
 	if [ x"$extra_packs" != "x" ] ; then
-		if [ x"$testcmd" != "x" ] ; then
-			$testcmd aptitude install $extra_packs
-		else
-			count_words=`echo "$extra_packs" | wc -w`;
+			count_words=$(echo "$extra_packs" | wc -w);
 			i=0
 			for deb_pack in $extra_packs
 			do
-				i=`expr $i + 1`
-				ProgressBar ${i} ${count_words} ${deb_pack}
-				# yes | aptitude install -y $deb_pack > /dev/null				
-				echo -ne '\n' | apt-get install -y $deb_pack > /dev/null 2> /dev/null
+				i=$((i + 1));
+				ProgressBar "${i}" "${count_words}" "${deb_pack}";
+				# shellcheck disable=SC2039
+				echo -ne '\n' | apt-get install -y "$deb_pack" > /dev/null 2> /dev/null
 			done
-		fi
 	fi
 }
 
@@ -242,18 +205,13 @@ install_unpackaged() {
 	fi
 }
 
-if in_test_mode; then
-	echo "#############################################"
-	echo "## $1: test mode."
-	echo "## Use the commands here to install your system."
-	echo "#############################################"
-elif test "${unpackaged}" = "yes" ; then
+if test "${unpackaged}" = "yes" ; then
 	install_unpackaged
 	exit 0
 fi
 
-OS=`uname -s`
-unsupported_distro=''
+OS=$(uname -s);
+unsupported_distro='';
 
 # A number of distributions we don't (yet?) support.
 if [ "$OS" != 'Linux' ]; then
@@ -267,8 +225,7 @@ fi
 
 if [ -f /etc/slackware-version ] || ([ -f /etc/os-release ] && . /etc/os-release && [ "$ID" = "slackware" ]); then
 	echo >&2 "$0: Your distribution (Slackware) is currently not supported. Aborting. Try manually:"
-	# libedit requires a newer version than Slackware 14.2, for example Slackware-current
-	# or you build it manually: <http://thrysoee.dk/editline/>
+	# lib edit requires a newer version than Slackware 14.2, for example Slackware-current
 	echo >&2 "$0: # slackpkg install make gcc pkg-config libedit util-linux sqlite libxml2 patch wget"
 	# required for libjansson
 	echo >&2 "$0: # ./contrib/scripts/install_prereq install-unpackaged"
@@ -288,8 +245,6 @@ else
 	exit 1;
 fi
 
-if ! in_test_mode; then
-	echo;
-	echo "## $1 completed successfully"                      #;
-	echo "####################################################";
-fi
+echo;
+echo "## $1 completed successfully"                      #;
+echo "####################################################";

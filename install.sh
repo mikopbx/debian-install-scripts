@@ -1,55 +1,37 @@
-#!/usr/bin/sh
-# sudo curl -s 'http://files.miko.ru/s/p6BM3FoajO7XV66/download' -L | sh
-# cd /
-# diff -Nru -I '^[[:space:]]*[*]' /usr/src/src_pack/Core-2020.1.124/etc/inc/ /etc/inc/ > /usr/src/mikopbx_2020.1.124.patch
-# diff -Nru -x mikopbx -I '^[[:space:]]*[*]' /usr/src/src_pack/Core-2020.1.124/etc/rc/ /etc/rc/  >> /usr/src/mikopbx_2020.1.124.patch
-# dpkg --get-selections | grep '\-dev' | awk '{ print $1 }'  | awk -F ":" '{ print $1 }' | xargs apt remove -y
+#!/bin/sh
+
+export ROOT_DIR=$(realpath "$(dirname "$0")");
+SRC_DIR=/usr/src;
 
 VERSION='2021.1.148';
 export PHP_VERSION='7.4';
-XDEBUG_VERSION='3.0.4'
-IGBINARY_VERSION='3.2.1';
-MSGPACK_VERSION='2.1.2';
-PHP_EVENT_VERSION='2.5.6';
-YAML_VERSION='2.0.4';
-PHP_PSR_VERSION='1.0.1';
-
-SUDO_CMD='sudo'
-type sudo 2> /dev/null || SUDO_CMD='';
-
-
-this_dir=$(pwd);
-SRC_DIR=/usr/src;
 export DEBIAN_FRONTEND=noninteractive;
 export PATH="$PATH:/sbin:/usr/sbin";
-
-LOG_FILE=/dev/stdout; #/dev/null;
+. "${ROOT_DIR}/libs/functions.sh";
+export SUDO_CMD='sudo'
+which sudo 2> /dev/null || SUDO_CMD='';
+export LOG_FILE=/dev/stdout;
 ${SUDO_CMD} busybox touch $LOG_FILE;
-
-${SUDO_CMD} apt-get update >> $LOG_FILE 2>> $LOG_FILE;
 echo "Installing dependencies (install_prereq)...";
-type curl || ${SUDO_CMD} apt-get -y install curl
-${SUDO_CMD} sh install_prereq install;
+${SUDO_CMD} sh "${ROOT_DIR}/libs/install_prereq.sh" install;
 
 # Добавляем модуль 8021q в автозагрузку. Поддержка VLAN. 
-module_8021q=$(cat /etc/modules | grep 8021q);
+module_8021q=$(grep 8021q </etc/modules);
 ${SUDO_CMD} cat /etc/modules > /tmp/modules_miko;
 if [ 'x' = "x${module_8021q}" ]; then 
 	${SUDO_CMD} echo 8021q >> /tmp/modules_miko;
 	${SUDO_CMD} mv /tmp/modules_miko /etc/modules;
 fi;
+this_dir=$(pwd);
+cd "$SRC_DIR" || exit 2;
 
-cd $SRC_DIR;
+for filename in "$ROOT_DIR"/packages/*.sh; do
+  [ -e "$filename" ] || continue
+  echo "Starting $filename";
+  ${SUDO_CMD} sh "$filename";
+done
 
-installPhpExtension 'xdebug' "https://xdebug.org/files/xdebug-${XDEBUG_VERSION}.tgz" '50' 'zend_' '--enable-xdebug'
-installPhpExtension 'igbinary' "https://github.com/igbinary/igbinary/archive/refs/tags/${IGBINARY_VERSION}.tar.gz" '40' '' ''
-installPhpExtension 'msgpack' "https://github.com/msgpack/msgpack-php/archive/refs/tags/msgpack-${MSGPACK_VERSION}.tar.gz" '40' '' ''
-installPhpExtension 'event' "https://pecl.php.net/get/event-${PHP_EVENT_VERSION}.tgz" '40' ''
-installPhpExtension 'yaml' "https://github.com/php/pecl-file_formats-yaml/archive/${YAML_VERSION}.tar.gz" '40' '' '' 
-
-# installPhpExtension 'php-psr' "https://github.com/jbboehr/php-psr/archive/v${PHP_PSR_VERSION}.tar.gz" '40' '' '' 
-
-exit;
+exit 0;
 
 echo "Dounload source ...";
 sudo curl -s 'http://files.miko.ru/s/rJh6mcSp1FeaPCw/download' -L -o src_pack.zip;
@@ -72,20 +54,6 @@ sudo mv /tmp/php_zephir_parser.ini /etc/php/$PHP_VERSION/mods-available/php_zeph
 sudo ln -s /etc/php/$PHP_VERSION/mods-available/php_zephir_parser.ini  /etc/php/$PHP_VERSION/cli/conf.d/40-php_zephir_parser.ini
 cd ..;
 
-echo "Install module php-psr ..."
-# sudo git clone -b v1.0.0 https://github.com/jbboehr/php-psr.git >> $LOG_FILE 2>> $LOG_FILE;
-cd php-psr;
-sudo phpize >> $LOG_FILE 2>> $LOG_FILE;
-sudo ./configure >> $LOG_FILE 2>> $LOG_FILE;
-sudo make >> $LOG_FILE 2>> $LOG_FILE;
-sudo make install >> $LOG_FILE 2>> $LOG_FILE;
-sudo echo 'extension=psr.so' > /tmp/psr.ini
-sudo mv /tmp/psr.ini /etc/php/$PHP_VERSION/mods-available/psr.ini  
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/psr.ini /etc/php/$PHP_VERSION/fpm/conf.d/40-psr.ini
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/psr.ini /etc/php/$PHP_VERSION/cli/conf.d/40-psr.ini
-
-cd ..;
-
 echo "Install app zephir ..."
 sudo chmod +x ./zephir 
 sudo cp ./zephir /usr/sbin/zephir;
@@ -100,18 +68,6 @@ sudo ln -s /etc/php/$PHP_VERSION/mods-available/phalcon.ini /etc/php/$PHP_VERSIO
 sudo ln -s /etc/php/$PHP_VERSION/mods-available/phalcon.ini /etc/php/$PHP_VERSION/fpm/conf.d/50-phalcon.ini;
 cd ..;
 
-cd pecl-event-libevent*
-sudo apt-get libevent-dev >> $LOG_FILE 2>> $LOG_FILE;
-sudo phpize >> $LOG_FILE 2>> $LOG_FILE;
-sudo ./configure >> $LOG_FILE 2>> $LOG_FILE;
-sudo make && sudo make install >> $LOG_FILE 2>> $LOG_FILE;
-
-sudo echo 'extension=libevent.so' > /tmp/libevent.ini
-sudo mv /tmp/libevent.ini /etc/php/$PHP_VERSION/mods-available/libevent.ini  
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/libevent.ini /etc/php/$PHP_VERSION/cli/conf.d/50-libevent.ini
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/libevent.ini /etc/php/$PHP_VERSION/fpm/conf.d/50-libevent.ini
-
-cd ..
 echo "Setting beanstalkd ..."
 sudo echo 'BEANSTALKD_LISTEN_ADDR=127.0.0.1' > /tmp/beanstalkd;
 sudo echo 'BEANSTALKD_LISTEN_PORT=4229' >> /tmp/beanstalkd;

@@ -17,6 +17,17 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+downloadFile()
+{
+	extensionUrl="$1";
+	${SUDO_CMD} curl -LO "$extensionUrl";
+	arName=$(basename "$extensionUrl");
+	srcDirName=$(tar -tf "${PWD}/${arName}" | cut -f 1 -d '/' | sort -u | grep -v package.xml);
+	${SUDO_CMD} tar xzf "${PWD}/${arName}"
+  ${SUDO_CMD} rm -rf "${PWD}/${arName}";
+  echo "$srcDirName";
+}
+
 installPhpExtension()
 {
 	extensionName="$1";
@@ -25,13 +36,10 @@ installPhpExtension()
 	extensionPrefix="$4";
 	extensionConfOpt="$5";
 
-	${SUDO_CMD} curl -LO "$extensionUrl";
-	arName=$(basename "$extensionUrl");
-	srcDirName=$(tar -tf "${PWD}/${arName}" | cut -f 1 -d '/' | sort -u | grep -v package.xml);
-	${SUDO_CMD} tar xzf "${PWD}/${arName}"
+  srcDirName=$(downloadFile "$extensionUrl");
 	makePhpExtension "${PWD}/${srcDirName}" "$extensionConfOpt"
 	enablePhpExtension "$extensionName" "$extensionPriority" "$extensionPrefix" 
-	${SUDO_CMD} rm -rf "${PWD}/${arName}" "${srcDirName}"
+	${SUDO_CMD} rm -rf "${srcDirName}"
 }
 
 enablePhpExtension()
@@ -39,14 +47,15 @@ enablePhpExtension()
 	libFileName="$1";
 	priority="$2";
 	prefix="$3";
-
 	${SUDO_CMD} echo "${prefix}extension=${libFileName}.so" > "/tmp/${libFileName}.ini";
-	
 	${SUDO_CMD} rm -rf "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini" "/etc/php/$PHP_VERSION/cli/conf.d/${priority}-${libFileName}.ini";
 	${SUDO_CMD} mv "/tmp/${libFileName}.ini" "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini";
-	${SUDO_CMD} ln -s "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini";
-	${SUDO_CMD} ln -s "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/cli/conf.d/${priority}-${libFileName}.ini";
 
+	links="$(find "/etc/php/$PHP_VERSION/cli/" -lname "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini")";
+	if [ 'x' = "${links}x" ];then
+    ${SUDO_CMD} ln -s "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini";
+    ${SUDO_CMD} ln -s "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/cli/conf.d/${priority}-${libFileName}.ini";
+	fi
 }
 
 makePhpExtension()

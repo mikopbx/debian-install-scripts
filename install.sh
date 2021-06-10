@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export ROOT_DIR=$(realpath "$(dirname "$0")");
-SRC_DIR=/usr/src;
+ROOT_DIR="$(realpath "$(dirname "$0")")";
+export ROOT_DIR;
 
 VERSION='2021.1.148';
 export PHP_VERSION='7.4';
@@ -15,7 +15,7 @@ ${SUDO_CMD} busybox touch $LOG_FILE;
 echo "Installing dependencies (install_prereq)...";
 ${SUDO_CMD} sh "${ROOT_DIR}/libs/install_prereq.sh" install;
 
-# Добавляем модуль 8021q в автозагрузку. Поддержка VLAN. 
+# Добавляем модуль 8021q в автозагрузку. Поддержка VLAN.
 module_8021q=$(grep 8021q </etc/modules);
 ${SUDO_CMD} cat /etc/modules > /tmp/modules_miko;
 if [ 'x' = "x${module_8021q}" ]; then 
@@ -23,12 +23,13 @@ if [ 'x' = "x${module_8021q}" ]; then
 	${SUDO_CMD} mv /tmp/modules_miko /etc/modules;
 fi;
 this_dir=$(pwd);
-cd "$SRC_DIR" || exit 2;
 
 for filename in "$ROOT_DIR"/packages/*.sh; do
   [ -e "$filename" ] || continue
   echo "Starting $filename";
-  ${SUDO_CMD} sh "$filename";
+  (
+    ${SUDO_CMD} sh "$filename";
+  );
 done
 
 exit 0;
@@ -41,32 +42,6 @@ SRC_DIR=$SRC_DIR/src_pack;
 cd $SRC_DIR;
 sudo curl -s "https://github.com/mikopbx/Core/archive/refs/tags/${VERSION}.zip" -o mikopbx.zip -L
 yes | sudo unzip mikopbx.zip >> $LOG_FILE 2>> $LOG_FILE
-
-
-echo "Install module php-zephir-parser ..."
-cd php-zephir-parser
-sudo phpize >> $LOG_FILE 2>> $LOG_FILE;
-sudo ./configure >> $LOG_FILE 2>> $LOG_FILE;
-sudo make >> $LOG_FILE 2>> $LOG_FILE;
-sudo make install >> $LOG_FILE 2>> $LOG_FILE;
-sudo echo 'extension=zephir_parser.so' > /tmp/php_zephir_parser.ini
-sudo mv /tmp/php_zephir_parser.ini /etc/php/$PHP_VERSION/mods-available/php_zephir_parser.ini 
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/php_zephir_parser.ini  /etc/php/$PHP_VERSION/cli/conf.d/40-php_zephir_parser.ini
-cd ..;
-
-echo "Install app zephir ..."
-sudo chmod +x ./zephir 
-sudo cp ./zephir /usr/sbin/zephir;
-
-echo "Install module phalcon ..."
-cd cphalcon-*
-sudo zephir fullclean
-sudo zephir build >> $LOG_FILE 2>> $LOG_FILE; 
-sudo echo 'extension=phalcon.so' > /tmp/phalcon.ini;
-sudo mv /tmp/phalcon.ini /etc/php/$PHP_VERSION/mods-available/phalcon.ini;
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/phalcon.ini /etc/php/$PHP_VERSION/cli/conf.d/50-phalcon.ini;
-sudo ln -s /etc/php/$PHP_VERSION/mods-available/phalcon.ini /etc/php/$PHP_VERSION/fpm/conf.d/50-phalcon.ini;
-cd ..;
 
 echo "Setting beanstalkd ..."
 sudo echo 'BEANSTALKD_LISTEN_ADDR=127.0.0.1' > /tmp/beanstalkd;

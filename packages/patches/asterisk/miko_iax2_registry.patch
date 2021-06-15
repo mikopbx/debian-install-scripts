@@ -1,0 +1,18 @@
+--- asterisk-13.20.0/channels/chan_iax2.c.vanilla	2018-05-30 15:02:56.000000000 +0300
++++ asterisk-13.20.0/channels/chan_iax2.c	2018-05-30 15:07:25.000000000 +0300
+@@ -7399,13 +7399,14 @@
+ 		astman_append(s,
+ 			"Event: RegistryEntry\r\n"
+ 			"%s"
++			"Addr: %s\r\n"
+ 			"Host: %s\r\n"
+ 			"DNSmanager: %s\r\n"
+ 			"Username: %s\r\n"
+ 			"Perceived: %s\r\n"
+ 			"Refresh: %d\r\n"
+ 			"State: %s\r\n"
+-			"\r\n", idtext, host, (reg->dnsmgr) ? "Y" : "N", reg->username, perceived,
++			"\r\n", idtext, reg->hostname, host, (reg->dnsmgr) ? "Y" : "N", reg->username, perceived,
+ 			reg->refresh, regstate2str(reg->regstate));
+ 
+ 		total++;

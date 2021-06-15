@@ -1,0 +1,20 @@
+--- asterisk-16.5.1/main/cdr.c.orgn	2019-10-13 22:02:34.820045174 +0300
++++ asterisk-16.5.1/main/cdr.c	2019-10-13 22:05:36.931815703 +0300
+@@ -3332,7 +3332,6 @@
+ 
+ 	cdr = cdr_object_get_by_name(channel_name);
+ 	if (!cdr) {
+-		ast_log(AST_LOG_ERROR, "Unable to find CDR for channel %s\n", channel_name);
+ 		return 1;
+ 	}
+ 
+@@ -3361,9 +3360,6 @@
+ 
+ 	cdr = cdr_object_get_by_name(channel_name);
+ 	if (!cdr) {
+-		if (is_cdr_flag_set(CDR_ENABLED)) {
+-			ast_log(AST_LOG_ERROR, "Unable to find CDR for channel %s\n", channel_name);
+-		}
+ 		return 0;
+ 	}
+ 

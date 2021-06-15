@@ -40,54 +40,6 @@ yes | sudo unzip src_pack.zip >> $LOG_FILE 2>> $LOG_FILE;
 sudo rm -rf __MACOSX src_pack.zip;
 SRC_DIR=$SRC_DIR/src_pack;
 cd $SRC_DIR;
-sudo curl -s "https://github.com/mikopbx/Core/archive/refs/tags/${VERSION}.zip" -o mikopbx.zip -L
-yes | sudo unzip mikopbx.zip >> $LOG_FILE 2>> $LOG_FILE
-
-echo "Setting beanstalkd ..."
-sudo echo 'BEANSTALKD_LISTEN_ADDR=127.0.0.1' > /tmp/beanstalkd;
-sudo echo 'BEANSTALKD_LISTEN_PORT=4229' >> /tmp/beanstalkd;
-sudo mv /tmp/beanstalkd /etc/default/beanstalkd
-
-cd dahdi-linux-complete-*;
-echo "Build dahdi ...";
-sudo make all >> $LOG_FILE 2>> $LOG_FILE;
-sudo make install >> $LOG_FILE 2>> $LOG_FILE;
-sudo make install-config >> $LOG_FILE 2>> $LOG_FILE;
-cd ..
-
-echo "Patch asterisk ..."
-cd asterisk-16.*
-cat ../asterisk-pack/patch/miko_asterisk_16_9_0.patch | sudo patch -p1 >> $LOG_FILE 2>> $LOG_FILE;
-
-echo "Start contrib/scripts/* ..."
-yes | sudo contrib/scripts/get_mp3_source.sh  >> $LOG_FILE 2>> $LOG_FILE;
-# yes | sudo contrib/scripts/install_prereq install  >> $LOG_FILE 2>> $LOG_FILE;
-
-echo "Configure asterisk ..."
-sudo ./configure >> $LOG_FILE 2>> $LOG_FILE;
-sudo adduser --system --group --home /var/lib/asterisk --no-create-home --disabled-password --gecos "MIKO PBX" asterisk >> $LOG_FILE 2>> $LOG_FILE;
-
-sudo make menuselect.makeopts >> $LOG_FILE 2>> $LOG_FILE;
-sudo menuselect/menuselect --enable app_meetme \
---enable format_mp3 \
---enable app_macro \
---enable codec_opus \
---enable codec_silk \
---enable codec_siren7 \
---enable codec_siren14 \
---enable codec_g729a  \
---enable CORE-SOUNDS-RU-ALAW \
---enable CORE-SOUNDS-EN-ULAW menuselect.makeopts; # */
-
-echo "Build asterisk ..."
-sudo make >> $LOG_FILE 2>> $LOG_FILE;
-sudo make install >> $LOG_FILE 2>> $LOG_FILE;
-sudo make config >> $LOG_FILE 2>> $LOG_FILE;
-
-sudo mkdir -p /storage/usbdisk1/mikopbx/persistence /storage/usbdisk1/mikopbx/astlogs/asterisk /storage/usbdisk1/mikopbx/voicemailarchive /storage/usbdisk1/mikopbx/log/asterisk/
-sudo chown -R asterisk:asterisk /storage/usbdisk1/mikopbx/persistence /storage/usbdisk1/mikopbx/astlogs/asterisk /storage/usbdisk1/mikopbx/voicemailarchive /storage/usbdisk1/mikopbx/log/asterisk/
-sudo chown -R asterisk:asterisk /etc/asterisk /var/lib/asterisk /var/spool/asterisk /var/log/asterisk
-cd ..;
 
 echo "Installing nginx..."
 sudo apt-get purge apache2 -y >> $LOG_FILE 2>> $LOG_FILE;
@@ -234,7 +186,7 @@ sudo rm -rf $SRC_DIR/*;
 sudo systemctl enable systemd-resolved >> $LOG_FILE
 sudo systemctl enable pdnsd.service >> $LOG_FILE
 sudo systemctl enable nginx.service >> $LOG_FILE
-sudo systemctl disable ntp  >> $LOG_FILE
+sudo systemctl disable ntp >> $LOG_FILE
 sudo systemctl disable asterisk >> $LOG_FILE
 sudo systemctl enable php$PHP_VERSION-fpm >> $LOG_FILE
 sudo systemctl enable beanstalkd >> $LOG_FILE

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${ROOT_DIR}/libs/functions.sh";
-
 LIB_VERSION='1.0.1';
 LIB_URL="https://github.com/jbboehr/php-psr/archive/v${LIB_VERSION}.tar.gz";
 LIB_PRIORITY='40';

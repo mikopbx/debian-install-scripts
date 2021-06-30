@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${ROOT_DIR}/libs/functions.sh";
-
 LIB_VERSION='3.2.1';
 LIB_URL="https://github.com/igbinary/igbinary/archive/refs/tags/${LIB_VERSION}.tar.gz";
 LIB_PRIORITY='40';

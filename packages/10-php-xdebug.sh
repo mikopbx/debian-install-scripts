@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${ROOT_DIR}/libs/functions.sh";
-
 LIB_VERSION='3.0.4';
 LIB_URL="https://xdebug.org/files/xdebug-${LIB_VERSION}.tgz";
 LIB_PRIORITY='50';

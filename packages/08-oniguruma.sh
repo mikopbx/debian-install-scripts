@@ -1,11 +1,13 @@
 #!/bin/bash
 
-LIB_VERSION='1.2.9a-par';
-LIB_URL="http://deb.debian.org/debian/pool/main/p/pdnsd/pdnsd_${LIB_VERSION}.orig.tar.gz";
+LIB_VERSION='6.9.7.1';
+LIB_URL="https://github.com/kkos/oniguruma/releases/download/v${LIB_VERSION}/onig-${LIB_VERSION}.tar.gz";
+
 srcDirName=$(downloadFile "$LIB_URL");
 (
   cd "$srcDirName" || exit;
   {
+    autoreconf -vfi;
     ./configure;
     make;
     make install;

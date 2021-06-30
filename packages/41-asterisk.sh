@@ -1,6 +1,5 @@
 #!/bin/bash
 
-. "${ROOT_DIR}/libs/functions.sh";
 LIB_VERSION='16.16.2';
 LIB_URL="http://downloads.asterisk.org/pub/telephony/asterisk/releases/asterisk-${LIB_VERSION}.tar.gz";
 LIB_NAME='asterisk';

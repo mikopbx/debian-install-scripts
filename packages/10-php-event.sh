@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${ROOT_DIR}/libs/functions.sh";
-
 LIB_VERSION='2.5.6';
 LIB_URL="https://pecl.php.net/get/event-${LIB_VERSION}.tgz";
 LIB_PRIORITY='40';

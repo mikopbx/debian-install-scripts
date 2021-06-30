@@ -22,13 +22,12 @@ if [ 'x' = "x${module_8021q}" ]; then
 	${SUDO_CMD} echo 8021q >> /tmp/modules_miko;
 	${SUDO_CMD} mv /tmp/modules_miko /etc/modules;
 fi;
-this_dir=$(pwd);
 
 for filename in "$ROOT_DIR"/packages/*.sh; do
   [ -e "$filename" ] || continue
   echo "Starting $filename";
   (
-    ${SUDO_CMD} sh "$filename";
+    ${SUDO_CMD} . "$filename";
   );
 done
 

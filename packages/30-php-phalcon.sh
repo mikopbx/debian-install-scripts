@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${ROOT_DIR}/libs/functions.sh";
-
 LIB_VERSION='4.1.0';
 LIB_URL="https://github.com/phalcon/cphalcon/archive/v${LIB_VERSION}.tar.gz";
 LIB_PRIORITY='40';

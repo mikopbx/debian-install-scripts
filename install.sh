@@ -40,26 +40,7 @@ sudo rm -rf __MACOSX src_pack.zip;
 SRC_DIR=$SRC_DIR/src_pack;
 cd $SRC_DIR;
 
-echo "Installing nginx..."
-sudo apt-get purge apache2 -y >> $LOG_FILE 2>> $LOG_FILE;
-
 sudo useradd www;
-cd nginx-pack;
-sudo dpkg -i nginx-common_1.14.2-2+deb10u1miko1_all.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-auth-pam*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-dav-ext*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-echo*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-geoip*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-image-filter*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-subs-filter*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-upstream-fair*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-xslt-filter*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-mail*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-stream*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-ndk*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i libnginx-mod-http-lua*.deb >> $LOG_FILE 2>> $LOG_FILE;
-sudo dpkg -i nginx-full*.deb >> $LOG_FILE 2>> $LOG_FILE;
-cd ..;
 
 echo "Installing pdnsd ..."
 cd pdnsd;

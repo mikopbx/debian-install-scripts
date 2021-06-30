@@ -25,7 +25,7 @@ downloadFile()
 	srcDirName=$(tar -tf "${PWD}/${arName}" | cut -f 1 -d '/' | sort -u | grep -v package.xml);
 	${SUDO_CMD} tar xzf "${PWD}/${arName}"
   ${SUDO_CMD} rm -rf "${PWD}/${arName}";
-  echo "$srcDirName";
+  realpath "$srcDirName";
 }
 
 installPhpExtension()

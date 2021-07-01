@@ -37,19 +37,23 @@ installPhpExtension()
 	extensionConfOpt="$5";
 
   srcDirName=$(downloadFile "$extensionUrl");
-	makePhpExtension "${PWD}/${srcDirName}" "$extensionConfOpt"
+	makePhpExtension "${srcDirName}" "$extensionConfOpt"
 	enablePhpExtension "$extensionName" "$extensionPriority" "$extensionPrefix" 
 	${SUDO_CMD} rm -rf "${srcDirName}"
 }
 
 enablePhpExtension()
 {
+  modDir="/etc/php/$PHP_VERSION/mods-available";
+  if [ ! -d "$modDir" ]; then
+    return;
+  fi;
 	libFileName="$1";
 	priority="$2";
 	prefix="$3";
 	${SUDO_CMD} echo "${prefix}extension=${libFileName}.so" > "/tmp/${libFileName}.ini";
 	${SUDO_CMD} rm -rf "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini" "/etc/php/$PHP_VERSION/cli/conf.d/${priority}-${libFileName}.ini";
-	${SUDO_CMD} mv "/tmp/${libFileName}.ini" "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini";
+	${SUDO_CMD} mv "/tmp/${libFileName}.ini" "${modDir}e/${libFileName}.ini";
 
 	links="$(find "/etc/php/$PHP_VERSION/cli/" -lname "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini")";
 	if [ 'x' = "${links}x" ];then

@@ -31,117 +31,67 @@ for filename in "$ROOT_DIR"/packages/*.sh; do
   );
 done
 
+# Setting DNS
+rm -rf /etc/resolv.conf;
+ln -svi /run/systemd/resolve/resolv.conf /etc/resolv.conf
+echo "[Resolve]" > /tmp/resolved.conf;
+echo "DNS=127.0.0.1 4.4.4.4 8.8.8.8" >> /tmp/resolved.conf;
+mv /tmp/resolved.conf /etc/systemd/resolved.conf;
+systemctl restart systemd-resolved
+systemctl enable systemd-resolved
+# END Setting DNS
+
+# Install MikoPBX source.
+curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+(
+  useradd www;
+  honeDir='/home/www';
+  mkdir -p "$honeDir" && chown www:www "$honeDir"
+  wwwDir='/usr/www';
+  mkdir -p "$wwwDir" && chown www:www "$wwwDir";
+  cd "$wwwDir" || exit;
+  su www -c 'composer require mikopbx/core';
+  su www -c 'composer show -- mikopbx/core' | grep versions | cut -d ' ' -f 4 > /etc/version;
+  busybox touch /etc/version.buildtime;
+  mv "$wwwDir/vendor/mikopbx/core/"* "$wwwDir/";
+  su www -c 'composer update';
+
+  echo "Installing gnatsd ..."
+  chmod +x "$wwwDir/resources/rootfs/usr/sbin/gnatsd"
+  ln -s "$wwwDir/resources/rootfs/usr/sbin/gnatsd" /usr/sbin/gnatsd;
+
+  rm -rf /etc/php.ini /etc/php.d/ /etc/nginx/ /etc/php-fpm.conf /etc/php-www.conf.;
+  ln -s $wwwDir/resources/rootfs/etc/nginx /etc/nginx
+  ln -s $wwwDir/resources/rootfs/etc/php.d /etc/php.d
+  ln -s $wwwDir/resources/rootfs/etc/php.ini /etc/php.ini
+  ln -s $wwwDir/resources/rootfs/etc/php-fpm.conf /etc/php-fpm.conf
+  ln -s $wwwDir/resources/rootfs/etc/php-www.conf /etc/php-www.conf
+
+  mkdir -p /cf/conf/;
+  cp $wwwDir/resources/db/mikopbx.db /cf/conf/mikopbx.db
+
+  chown -R  asterisk:asterisk /etc/asterisk
+  mkdir -p /offload/rootfs/usr/www/ /offload/asterisk/;
+  ln -s /usr/lib/asterisk/modules/ /offload/asterisk/modules;
+  ln -s /var/lib/asterisk/documentation/ /offload/asterisk/documentation
+  ln -s /var/lib/asterisk/moh/ /offload/asterisk/moh;
+  mkdir -p /var/asterisk/run;
+  chown -R  asterisk:asterisk /var/asterisk/run;
+
+  ln -s /usr/www/config /etc/inc;
+  ln -s /usr/www/src/Core/Rc /etc/rc;
+  chmod +x -R /etc/rc;
+  chown -R www:www /offload;
+
+  mkdir -p /storage/usbdisk1;
+)
+
+
 exit 0;
 
-echo "Dounload source ...";
-sudo curl -s 'http://files.miko.ru/s/rJh6mcSp1FeaPCw/download' -L -o src_pack.zip;
-yes | sudo unzip src_pack.zip >> $LOG_FILE 2>> $LOG_FILE;
-sudo rm -rf __MACOSX src_pack.zip;
-SRC_DIR=$SRC_DIR/src_pack;
-cd $SRC_DIR;
-
-sudo useradd www;
-
-echo "Installing pdnsd ..."
-cd pdnsd;
-sudo cp pdnsd.conf /etc/pdnsd.conf
-# echo -ne '\n' | apt-get install -y libvpb-dev
-yes '' | sudo dpkg -i pdnsd_1.2.9a-par-2miko1_amd64.deb >> $LOG_FILE 2>> $LOG_FILE;
-# sudo mkdir -p /storage/usbdisk1/mikopbx/log/pdnsd/cashe;
-# sudo chown pdnsd /storage/usbdisk1/mikopbx/log/pdnsd/cashe;
-
-#sudo echo 'START_DAEMON=yes' > /tmp/pdnsd;
-#sudo echo 'AUTO_MODE=' >> /tmp/pdnsd;
-#sudo echo 'START_OPTIONS=' >> /tmp/pdnsd;
-# sudo mv /tmp/pdnsd /etc/default/pdnsd
-
-sudo rm -rf /etc/resolv.conf;
-sudo ln -svi /run/systemd/resolve/resolv.conf /etc/resolv.conf;
-
-echo "[Resolve]" > /tmp/resolved.conf;
-echo "DNS=127.0.0.1" >> /tmp/resolved.conf;
-sudo mv /tmp/resolved.conf /etc/systemd/resolved.conf;
-sudo systemctl restart systemd-resolved
-sudo systemctl restart pdnsd
-cd ..;
-
-echo "Installing gnatsd ..."
-sudo chmod +x gnatsd 
-sudo mv gnatsd /usr/sbin/gnatsd
-
 echo "Installing MIKOPBX ..."
-sudo mkdir -p /var/etc/;
-sudo echo $VERSION > /tmp/version;
-sudo mv /tmp/version /etc/version;
-sudo busybox touch /etc/version.buildtime;
-
-sudo rm -rf /etc/php/$PHP_VERSION/fpm/pool.d/*; #*/
-
-sudo cp Core-$VERSION/etc/php-www.conf /etc/php/$PHP_VERSION/fpm/pool.d/;
-sudo cp Core-$VERSION/etc/nginx/nginx.conf /etc/nginx/nginx.conf.pattern;
-sudo sed -i '1s/^/load_module modules\/ngx_http_lua_module.so;\n/' /etc/nginx/nginx.conf.pattern;
-sudo sed -i '1s/^/load_module modules\/ndk_http_module.so;\n/' /etc/nginx/nginx.conf.pattern;
-sudo cp /etc/nginx/nginx.conf.pattern /etc/nginx/nginx.conf;
-sudo sed -i 's/<WEBPort>/80/g' /etc/nginx/nginx.conf;
-
-php_ini_file='php_miko.ini';
-sudo echo 'include_path = ".:/etc/inc:/usr/www:/etc/asterisk/agi-bin"' > "/tmp/${php_ini_file}";
-sudo echo 'session.save_path = /var/lib/php/session' >> "/tmp/$php_ini_file";
-sudo echo 'error_log = /var/log/php_error.log' 	  >> "/tmp/$php_ini_file";
-sudo echo 'upload_max_filesize = 100G' 	  >> "/tmp/$php_ini_file";
-sudo echo 'post_max_size = 100G' 	  >> "/tmp/$php_ini_file";
-sudo echo 'default_charset = "UTF-8"' 	  >> "/tmp/$php_ini_file";
-
-sudo mv "/tmp/$php_ini_file" "/etc/php/$PHP_VERSION/mods-available/${php_ini_file}";
-sudo ln -s "/etc/php/$PHP_VERSION/mods-available/${php_ini_file}" "/etc/php/$PHP_VERSION/fpm/conf.d/40-${php_ini_file}";
-sudo ln -s "/etc/php/$PHP_VERSION/mods-available/${php_ini_file}" "/etc/php/$PHP_VERSION/cli/conf.d/40-${php_ini_file}";
-
-sudo rm -rf  /etc/asterisk/*;
-sudo cp -R Core-$VERSION/etc/asterisk/* /etc/asterisk/
-sudo chown -R  asterisk:asterisk /etc/asterisk/*
-
-sudo mkdir -p /offload/rootfs/usr/www/ /offload/asterisk/;
-sudo ln -s /usr/lib/asterisk/modules/ /offload/asterisk/modules
-sudo ln -s /var/lib/asterisk/documentation/ /offload/asterisk/documentation
-sudo ln -s /var/lib/asterisk/moh/ /offload/asterisk/moh
-sudo mkdir -p /var/asterisk/run
-sudo chown -R  asterisk:asterisk /var/asterisk/run
-
-sudo ln -s /offload/rootfs/usr/www/ /usr/www;
-sudo cp -r Core-$VERSION/www/* /offload/rootfs/usr/www/;
-sudo cp -r Core-$VERSION/etc/inc /etc/;
-sudo cp -R Core-$VERSION/etc/rc /etc/
-sudo chmod +x -R /etc/rc
-sudo chown -R www:www /offload;
-sudo mkdir -p /cf/conf/
-
-sudo cp mikopbx.db /cf/conf/mikopbx.db;
-sudo chown -R www:www /cf/conf/
-
-# Накладываем патч. Если необходимо. 
-if [ -f $SRC_DIR/mikopbx-patches/mikopbx_$VERSION.patch ]; then
-	cd /;
-	sudo cat $SRC_DIR/mikopbx-patches/mikopbx_$VERSION.patch | sudo patch -p0;
-	cd  $SRC_DIR;
-fi
-
-### nginx ищет файлы тут /offload/rootfs/usr/www/admin-cabinet/public/js/cache
-### файлы должны лежать тут /storage/usbdisk1/mikopbx/cache_js_dir
-sudo rm -rf /offload/rootfs/usr/www/admin-cabinet/public/js/cache;
-sudo ln -s /storage/usbdisk1/mikopbx/cache_js_dir /offload/rootfs/usr/www/admin-cabinet/public/js/cache;
-
-sudo rm -rf /offload/rootfs/usr/www/admin-cabinet/public/css/cache;
-sudo ln -s /storage/usbdisk1/mikopbx/cache_css_dir /offload/rootfs/usr/www/admin-cabinet/public/css/cache;
-
-sudo rm -rf /offload/rootfs/usr/www/admin-cabinet/public/img/cache
-sudo ln -s  /storage/usbdisk1/mikopbx/cache_img_dir /offload/rootfs/usr/www/admin-cabinet/public/img/cache
-
-sudo mkdir -p /storage/usbdisk1/;
-sudo mkdir -p /var/cache/www/admin-cabinet/cache/volt/ /var/cache/www/back-end/cache/metadata/ /var/cache/www/back-end/cache/datacache/ /var/log/www/admin-cabinet/logs/
-sudo chown -R www:www /var/cache/www/admin-cabinet/cache/volt/ /var/cache/www/back-end/cache/metadata/ /var/cache/www/back-end/cache/datacache/ /var/log/www/admin-cabinet/logs/
-
 # Добавим автозагрузку при старте:
-if [ ! -d Core-$VERSION/etc/rc/mikopbx/ ]; then 
+if [ ! -d Core-$VERSION/etc/rc/mikopbx/ ]; then
 	sudo mkdir -p Core-$VERSION/etc/rc;
 	sudo mv mikopbx-systemd Core-$VERSION/etc/rc/mikopbx;
 fi;
@@ -158,10 +108,6 @@ sudo update-rc.d mikopbx_iptables defaults >> $LOG_FILE
 sudo ln -s /etc/rc/mikopbx/mikopbx_lan_dhcp /etc/dhcp/dhclient-enter-hooks.d/mikopbx_lan_dhcp
 sudo mkdir -p /storage/usbdisk1/mikopbx/log/system
 sudo ln -s /var/log/messages /storage/usbdisk1/mikopbx/log/system/messages
-
-cd $this_dir;
-sudo rm -rf $SRC_DIR/*;
-# sudo sed -i 's/root:\/bin\/bash/root:\/etc\/rc\/initial/g' /etc/passwd;
 
 sudo systemctl enable systemd-resolved >> $LOG_FILE
 sudo systemctl enable pdnsd.service >> $LOG_FILE

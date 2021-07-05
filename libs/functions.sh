@@ -44,17 +44,24 @@ installPhpExtension()
 
 enablePhpExtension()
 {
-  modDir="/etc/php/$PHP_VERSION/mods-available";
-  if [ ! -d "$modDir" ]; then
-    return;
-  fi;
 	libFileName="$1";
 	priority="$2";
 	prefix="$3";
-	${SUDO_CMD} echo "${prefix}extension=${libFileName}.so" > "/tmp/${libFileName}.ini";
-	${SUDO_CMD} rm -rf "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini" "/etc/php/$PHP_VERSION/cli/conf.d/${priority}-${libFileName}.ini";
-	${SUDO_CMD} mv "/tmp/${libFileName}.ini" "${modDir}e/${libFileName}.ini";
 
+  modDir="/etc/php/$PHP_VERSION/mods-available";
+  if [ ! -d "$modDir" ]; then
+    realModDir='/etc/php.d';
+    mkdir -p "$realModDir";
+  else
+    realModDir=$modDir;
+  fi;
+	${SUDO_CMD} echo "${prefix}extension=${libFileName}.so" > "/tmp/${libFileName}.ini";
+	${SUDO_CMD} mv "/tmp/${libFileName}.ini" "${realModDir}/${libFileName}.ini";
+  if [ ! -d "$modDir" ]; then
+    return;
+  fi;
+
+	${SUDO_CMD} rm -rf "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini" "/etc/php/$PHP_VERSION/cli/conf.d/${priority}-${libFileName}.ini";
 	links="$(find "/etc/php/$PHP_VERSION/cli/" -lname "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini")";
 	if [ 'x' = "${links}x" ];then
     ${SUDO_CMD} ln -s "/etc/php/$PHP_VERSION/mods-available/${libFileName}.ini" "/etc/php/$PHP_VERSION/fpm/conf.d/${priority}-${libFileName}.ini";

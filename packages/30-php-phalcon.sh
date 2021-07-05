@@ -12,6 +12,10 @@ srcDirName=$(downloadFile "$LIB_URL");
 (
   cd "$srcDirName" || exit;
   {
+    memLimit="$(grep memory_limit < /etc/php.ini)";
+    if [ 'x' = "x${memLimit}" ]; then
+      echo 'memory_limit=-1' >> /etc/php.ini;
+    fi;
     ../zephir fullclean;
     ../zephir build;
     cp ./ext/modules/phalcon.so "$(php-config --extension-dir)/";

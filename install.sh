@@ -35,8 +35,8 @@ ln -svi /run/systemd/resolve/resolv.conf /etc/resolv.conf
 echo "[Resolve]" > /tmp/resolved.conf;
 echo "DNS=127.0.0.1 4.4.4.4 8.8.8.8" >> /tmp/resolved.conf;
 mv /tmp/resolved.conf /etc/systemd/resolved.conf;
-systemctl restart systemd-resolved
 systemctl enable systemd-resolved
+systemctl restart systemd-resolved
 # END Setting DNS
 
 # Install MikoPBX source.
@@ -64,6 +64,7 @@ curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --fil
   ln -s $wwwDir/resources/rootfs/etc/php.ini /etc/php.ini
   ln -s $wwwDir/resources/rootfs/etc/php-fpm.conf /etc/php-fpm.conf
   ln -s $wwwDir/resources/rootfs/etc/php-www.conf /etc/php-www.conf
+  ln -s /bin/busybox /bin/killall
 
   mkdir -p /cf/conf/;
   cp $wwwDir/resources/db/mikopbx.db /cf/conf/mikopbx.db
@@ -82,45 +83,14 @@ curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --fil
   chown -R www:www /offload;
 
   mkdir -p /storage/usbdisk1;
+
+  chmod +x /etc/rc/debian/*;
+  ln -s /etc/rc/debian/mikopbx.sh /etc/init.d/mikopbx;
+  update-rc.d mikopbx defaults;
+  systemctl restart mikopbx;
+
+  ln -s /etc/rc/debian/mikopbx_iptables  /etc/init.d/mikopbx-iptables
+  update-rc.d mikopbx-iptables defaults
+
+  ln -s /etc/rc/debian/mikopbx_lan_dhcp /etc/dhcp/dhclient-enter-hooks.d/mikopbx_lan_dhcp
 )
-exit 0;
-
-
-
-
-echo "Installing MIKOPBX ..."
-# Добавим автозагрузку при старте:
-if [ ! -d Core-$VERSION/etc/rc/mikopbx/ ]; then
-	sudo mkdir -p Core-$VERSION/etc/rc;
-	sudo mv mikopbx-systemd Core-$VERSION/etc/rc/mikopbx;
-fi;
-
-sudo cp -R Core-$VERSION/etc/rc/mikopbx /etc/rc;
-sudo chmod +x /etc/rc/mikopbx/*;
-
-sudo ln -s /etc/rc/mikopbx/mikopbx.sh /etc/init.d/mikopbx
-sudo update-rc.d mikopbx defaults >> $LOG_FILE
-
-sudo ln -s /etc/rc/mikopbx/mikopbx_iptables  /etc/init.d/mikopbx_iptables
-sudo update-rc.d mikopbx_iptables defaults >> $LOG_FILE
-
-sudo ln -s /etc/rc/mikopbx/mikopbx_lan_dhcp /etc/dhcp/dhclient-enter-hooks.d/mikopbx_lan_dhcp
-sudo mkdir -p /storage/usbdisk1/mikopbx/log/system
-sudo ln -s /var/log/messages /storage/usbdisk1/mikopbx/log/system/messages
-
-sudo systemctl enable systemd-resolved >> $LOG_FILE
-sudo systemctl enable pdnsd.service >> $LOG_FILE
-sudo systemctl enable nginx.service >> $LOG_FILE
-sudo systemctl disable ntp >> $LOG_FILE
-sudo systemctl disable asterisk >> $LOG_FILE
-sudo systemctl enable php$PHP_VERSION-fpm >> $LOG_FILE
-sudo systemctl enable beanstalkd >> $LOG_FILE
-
-sudo systemctl restart php$PHP_VERSION-fpm >> $LOG_FILE
-sudo systemctl restart nginx.service >> $LOG_FILE
-sudo systemctl restart beanstalkd >> $LOG_FILE
-
-sudo systemctl restart mikopbx >> $LOG_FILE
-sudo systemctl stop pdnsd >> $LOG_FILE
-sudo systemctl start pdnsd >> $LOG_FILE
-sudo systemctl restart systemd-resolved >> $LOG_FILE

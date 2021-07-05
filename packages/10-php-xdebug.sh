@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LIB_VERSION='3.0.4';
+LIB_VERSION='2.9.5';
 LIB_URL="https://xdebug.org/files/xdebug-${LIB_VERSION}.tgz";
 LIB_PRIORITY='50';
 LIB_PHP_MODULE_PREFIX_INI='zend_';

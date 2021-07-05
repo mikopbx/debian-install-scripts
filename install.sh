@@ -1,18 +1,16 @@
 #!/bin/sh
 
 ROOT_DIR="$(realpath "$(dirname "$0")")";
-export ROOT_DIR;
+. "${ROOT_DIR}/libs/functions.sh";
 
-VERSION='2021.1.148';
-export PHP_VERSION='7.4';
+export ROOT_DIR;
 export DEBIAN_FRONTEND=noninteractive;
 export PATH="$PATH:/sbin:/usr/sbin";
-. "${ROOT_DIR}/libs/functions.sh";
 export SUDO_CMD='sudo'
-which sudo 2> /dev/null || SUDO_CMD='';
 export LOG_FILE=/dev/stdout;
+
+which sudo 2> /dev/null || SUDO_CMD='';
 ${SUDO_CMD} busybox touch $LOG_FILE;
-echo "Installing dependencies (install_prereq)...";
 ${SUDO_CMD} sh "${ROOT_DIR}/libs/install_prereq.sh" install;
 
 # Добавляем модуль 8021q в автозагрузку. Поддержка VLAN.
@@ -85,9 +83,10 @@ curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --fil
 
   mkdir -p /storage/usbdisk1;
 )
-
-
 exit 0;
+
+
+
 
 echo "Installing MIKOPBX ..."
 # Добавим автозагрузку при старте:

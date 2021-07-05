@@ -39,8 +39,6 @@ PACKAGES_DEBIAN="$PACKAGES_DEBIAN libcodec2-dev libfftw3-dev libsndfile1-dev lib
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN wget subversion p7zip-full"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN bzip2 patch python-dev vlan git ntp sqlite3 curl w3m re2c lame libbz2-dev libgmp-dev libzip-dev"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN fail2ban sngrep tcpdump msmtp beanstalkd lua5.1-dev liblua5.1-0 libtonezone-dev libevent-dev libyaml-dev"
-# PACKAGES_DEBIAN="$PACKAGES_DEBIAN php${PHP_VERSION} php${PHP_VERSION}-mbstring php${PHP_VERSION}-fpm php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-curl"
-# PACKAGES_DEBIAN="$PACKAGES_DEBIAN php${PHP_VERSION}-dev php${PHP_VERSION}-yaml php${PHP_VERSION}-bcmath php${PHP_VERSION}-xml"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN linux-headers-$(uname -r)"
 case "$1" in
 install)

@@ -1,14 +1,17 @@
 #!/bin/bash
 #
-LIB_VERSION='1.14.0';
-LIB_URL="http://nginx.org/download/nginx-${LIB_VERSION}.tar.gz";
-srcDirName=$(downloadFile "$LIB_URL");
+NGINX_VERSION='1.14.0';
+NGINX_LUA_M_VERSION='0.10.20';
+NGINX_PUSH_M_VERSION='0.5.4';
+NGINX_DEV_KIT_VERSION='0.3.0';
 
-LIB_URL_LUA="https://github.com/openresty/lua-nginx-module/archive/refs/tags/v0.10.16.tar.gz";
+LIB_URL="http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz";
+srcDirName=$(downloadFile "$LIB_URL");
+LIB_URL_LUA="https://github.com/openresty/lua-nginx-module/archive/refs/tags/v${NGINX_LUA_M_VERSION}.tar.gz";
 srcDirNameLua=$(downloadFile "$LIB_URL_LUA");
-LIB_URL_PUSH="https://github.com/wandenberg/nginx-push-stream-module/archive/refs/tags/0.5.4.tar.gz";
+LIB_URL_PUSH="https://github.com/wandenberg/nginx-push-stream-module/archive/refs/tags/${NGINX_PUSH_M_VERSION}.tar.gz";
 srcDirNamePush=$(downloadFile "$LIB_URL_PUSH");
-LIB_URL_KIT="https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v0.3.0.tar.gz";
+LIB_URL_KIT="https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v${NGINX_DEV_KIT_VERSION}.tar.gz";
 srcDirNameKit=$(downloadFile "$LIB_URL_KIT");
 (
   cd "$srcDirName" || exit;
@@ -23,7 +26,7 @@ srcDirNameKit=$(downloadFile "$LIB_URL_KIT");
         );
       done
     fi;
-    export LUAJIT_LIB=/usr/local/lib/ export LUAJIT_INC=/usr/local/include/luajit-2.0/
+    export LUAJIT_LIB=/usr/local/lib/ export LUAJIT_INC=/usr/local/include/luajit-2.1/
     ./configure --prefix=/usr --user=nginx --group=nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/error.log \
 	              --http-log-path=/var/log/access.log \
 	              --pid-path=/var/run/nginx.pid \
@@ -37,10 +40,11 @@ srcDirNameKit=$(downloadFile "$LIB_URL_KIT");
                 --add-module="$(realpath "$srcDirNameKit")" \
                 --add-module="$(realpath "$srcDirNamePush")" \
                 --add-module="$(realpath "$srcDirNameLua")";
-    make;
-    make install;
+    make && make install;
   } >> "$LOG_FILE" 2>> "$LOG_FILE";
 )
 
 useradd www;
 rm -rf "$srcDirName" "$srcDirNameLua" "$srcDirNamePush" "$srcDirNameKit";
+
+

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-LIB_VERSION='2.0.5';
-LIB_URL="https://luajit.org/download/LuaJIT-${LIB_VERSION}.tar.gz"
+LIB_VERSION='2.1-20210510';
+LIB_URL="https://github.com/openresty/luajit2/archive/refs/tags/v${LIB_VERSION}.tar.gz"
 srcDirName=$(downloadFile "$LIB_URL");
 (
   cd "$srcDirName" || exit;

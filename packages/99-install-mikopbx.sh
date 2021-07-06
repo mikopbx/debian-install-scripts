@@ -55,4 +55,6 @@ ln -s /etc/rc/debian/mikopbx_lan_dhcp \
       /etc/dhcp/dhclient-enter-hooks.d/mikopbx_lan_dhcp
 ln -s /usr/www/resources/rootfs/usr/lib64/extensions/no-debug-zts-20190902/mikopbx.so \
       /usr/lib64/extensions/no-debug-zts-20190902/mikopbx.so
+
+systemctl disable rsyslog;
 )

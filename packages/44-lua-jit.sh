@@ -9,6 +9,7 @@ srcDirName=$(downloadFile "$LIB_URL");
     make;
     make install;
     ln -s /usr/local/lib/libluajit-5.1.so.2 /lib64/libluajit-5.1.so.2
+    ln -s /usr/local/lib/libluajit-5.1.so.2 /usr/lib64/libluajit-5.1.so.2
   } >> "$LOG_FILE" 2>> "$LOG_FILE";
 )
 

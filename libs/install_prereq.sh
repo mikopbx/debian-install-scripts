@@ -36,7 +36,7 @@ PACKAGES_DEBIAN="$PACKAGES_DEBIAN libsnmp-dev libiksemel-dev libcorosync-common-
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libresample1-dev libc-client2007e-dev binutils-dev libsrtp2-dev libsrtp2-dev libgsm1-dev doxygen graphviz zlib1g-dev libldap2-dev"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libcodec2-dev libfftw3-dev libsndfile1-dev libunbound-dev"
 # Asterisk: for the unpackaged below:
-PACKAGES_DEBIAN="$PACKAGES_DEBIAN wget subversion p7zip-full open-vm-tools"
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN wget subversion p7zip-full open-vm-tools sysstat"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN bzip2 patch python-dev vlan git ntp sqlite3 curl w3m re2c lame libbz2-dev libgmp-dev libzip-dev"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN fail2ban sngrep tcpdump msmtp beanstalkd lua5.1-dev liblua5.1-0 libtonezone-dev libevent-dev libyaml-dev"
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN linux-headers-$(uname -r)"
@@ -73,11 +73,6 @@ ProgressBar() {
 
 handle_debian() {
 	apt -y install lsb-release apt-transport-https ca-certificates > /dev/null 2> /dev/null;
-	#phpListFile='/etc/apt/sources.list.d/php.list';
-	#if [ ! -f "$phpListFile" ]; then
-  #  wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-  #  echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee "$phpListFile"
-  #fi;
 	if ! [ -x "$(command -v aptitude)" ]; then
 		apt-get install -y aptitude > /dev/null
 	fi

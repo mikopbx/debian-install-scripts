@@ -36,7 +36,7 @@ srcDirNameKit=$(downloadFile "$LIB_URL_KIT");
                 --http-uwsgi-temp-path=/var/log/uwsgi_temp \
                 --http-scgi-temp-path=/var/log/scgi_temp \
                 --with-http_ssl_module \
-                --with-ld-opt="-Wl,-rpath,$LUA_LIB,-ldl" \
+                --with-ld-opt="-Wl,-rpath,$LUAJIT_LIB,-ldl" \
                 --add-module="$(realpath "$srcDirNameKit")" \
                 --add-module="$(realpath "$srcDirNamePush")" \
                 --add-module="$(realpath "$srcDirNameLua")";

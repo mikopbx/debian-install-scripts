@@ -26,6 +26,7 @@ ln -s $wwwDir/resources/rootfs/etc/php-www.conf /etc/php-www.conf
 ln -s /bin/busybox /bin/killall
 
 mkdir -p /cf/conf/;
+chown -R www:www /cf
 cp $wwwDir/resources/db/mikopbx.db /cf/conf/mikopbx.db
 
 chown -R  asterisk:asterisk /etc/asterisk
@@ -41,7 +42,8 @@ ln -s /usr/www/src/Core/Rc /etc/rc;
 chmod +x -R /etc/rc;
 chown -R www:www /offload;
 
-mkdir -p /storage/usbdisk1;
+mkdir -p /storage/usbdisk1 /storage/usbdisk1/mikopbx/media/moh /offload/asterisk/firmware/iax;
+cp /usr/www/resources/sounds/moh/* /storage/usbdisk1/mikopbx/media/moh/
 
 chmod +x /etc/rc/debian/*;
 ln -s /etc/rc/debian/mikopbx.sh /etc/init.d/mikopbx;
@@ -57,4 +59,9 @@ ln -s /usr/www/resources/rootfs/usr/lib64/extensions/no-debug-zts-20190902/mikop
       /usr/lib64/extensions/no-debug-zts-20190902/mikopbx.so
 ln -s /usr/www/resources/sounds /offload/asterisk/sounds
 systemctl disable rsyslog;
+
+chmod +x /usr/www/resources/rootfs/sbin/*;
+ln -s /usr/www/resources/rootfs/sbin/wav2mp3.sh /sbin/wav2mp3.sh
+ln -s /usr/www/resources/rootfs/sbin/crash_asterisk /sbin/crash_asterisk
+
 )

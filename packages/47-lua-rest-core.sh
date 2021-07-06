@@ -8,8 +8,8 @@ srcDirNameLuaRest=$(downloadFile "$LIB_URL_LUA_REST");
   cd "$srcDirNameLuaRest" || exit;
   {
     export LUA_VERSION=5.1;
-    ln -s /usr/local/lib/lua/5.1/resty /usr/local/share/lua/5.1/resty;
     make install;
+    ln -s /usr/local/lib/lua/5.1/resty /usr/local/share/lua/5.1/resty;
   }
 
 )

@@ -5,6 +5,7 @@ LIB_URL_LUA_REST_CACHE="https://github.com/openresty/lua-resty-lrucache/archive/
 srcDirNameLuaRestCache=$(downloadFile "$LIB_URL_LUA_REST_CACHE");
 (
   cd "$srcDirNameLuaRestCache" || exit;
+  export LUA_VERSION=5.1;
   make install;
 )
 rm -rf "$srcDirNameLuaRestCache"

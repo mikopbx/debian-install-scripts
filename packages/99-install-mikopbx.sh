@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "${MIKO_PBX_VERSION}x" = "x" ]; then
+  MIKO_PBX_VERSION='dev-develop';
+fi;
+
 (
 useradd www;
 honeDir='/home/www';
@@ -7,8 +11,8 @@ mkdir -p "$honeDir" && chown www:www "$honeDir"
 wwwDir='/usr/www';
 mkdir -p "$wwwDir" && chown www:www "$wwwDir";
 cd "$wwwDir" || exit;
-su www -c 'composer require mikopbx/core';
-su www -c 'composer show -- mikopbx/core' | grep versions | cut -d ' ' -f 4 > /etc/version;
+su www -c "composer require mikopbx/core:${MIKO_PBX_VERSION}";
+echo "${MIKO_PBX_VERSION}" > /etc/version;
 busybox touch /etc/version.buildtime;
 mv "$wwwDir/vendor/mikopbx/core/"* "$wwwDir/";
 su www -c 'composer update';

@@ -13,6 +13,7 @@ RUN apt-get update && \
     ln -s /bin/busybox /bin/ifconfig && \
     ln -s /bin/busybox /bin/ping && \
     ln -s /bin/busybox /bin/route && \
+    ln -s /usr/sbin/cron /usr/sbin/crond \
     rm -rf /bin/ps && ln -s /bin/busybox /bin/ps && \
     touch /etc/docker
 

@@ -8,7 +8,6 @@ srcDirName=$(downloadFile "$LIB_URL");
   {
     make all;
     make install;
-    make install-config;
   } >> "$LOG_FILE" 2>> "$LOG_FILE";
 )
 

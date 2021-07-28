@@ -5,7 +5,7 @@ if [ "${MIKO_PBX_VERSION}x" = "x" ]; then
 fi;
 
 (
-useradd www;
+useradd www 2> /dev/null;
 honeDir='/home/www';
 mkdir -p "$honeDir" && chown www:www "$honeDir"
 wwwDir='/usr/www';
@@ -51,21 +51,25 @@ cp /usr/www/resources/sounds/moh/* /storage/usbdisk1/mikopbx/media/moh/
 
 chmod +x /etc/rc/debian/*;
 ln -s /etc/rc/debian/mikopbx.sh /etc/init.d/mikopbx;
-update-rc.d mikopbx defaults;
-systemctl restart mikopbx;
 
-ln -s /etc/rc/debian/mikopbx_iptables  /etc/init.d/mikopbx-iptables
-update-rc.d mikopbx-iptables defaults
-
-ln -s /etc/rc/debian/mikopbx_lan_dhcp \
-      /etc/dhcp/dhclient-enter-hooks.d/mikopbx_lan_dhcp
-ln -s /usr/www/resources/rootfs/usr/lib64/extensions/no-debug-zts-20190902/mikopbx.so \
-      /usr/lib64/extensions/no-debug-zts-20190902/mikopbx.so
+extensionDir="$(php -i | grep '^extension_dir' | cut -d ' ' -f 3)";
+ln -s /usr/www/resources/rootfs/usr/lib64/extensions/no-debug-zts-20190902/mikopbx.so "$extensionDir/mikopbx.so";
 ln -s /usr/www/resources/sounds /offload/asterisk/sounds
-systemctl disable rsyslog;
-
 chmod +x /usr/www/resources/rootfs/sbin/*;
 ln -s /usr/www/resources/rootfs/sbin/wav2mp3.sh /sbin/wav2mp3.sh
 ln -s /usr/www/resources/rootfs/sbin/crash_asterisk /sbin/crash_asterisk
+
+ln -s /etc/rc/debian/mikopbx_iptables /etc/init.d/mikopbx-iptables
+
+CTL_CMD='systemctl'
+which "$CTL_CMD" 2> /dev/null || CTL_CMD='';
+if [ ! "${CTL_CMD}x" = 'x' ]; then
+  # в Docker нет systemctl
+  ln -s /etc/rc/debian/mikopbx_lan_dhcp /etc/dhcp/dhclient-enter-hooks.d/mikopbx_lan_dhcp
+  update-rc.d mikopbx defaults;
+  systemctl restart mikopbx;
+  update-rc.d mikopbx-iptables defaults
+  systemctl disable rsyslog;
+fi;
 
 )

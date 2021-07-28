@@ -25,7 +25,7 @@ usage() {
 }
 
 # Basic build system:
-PACKAGES_DEBIAN="curl dialog build-essential pkg-config"
+PACKAGES_DEBIAN="curl dialog dropbear build-essential pkg-config"
 # Asterisk: basic requirements:
 PACKAGES_DEBIAN="$PACKAGES_DEBIAN libedit-dev libjansson-dev libsqlite3-dev uuid-dev libxml2-dev"
 # Asterisk: for addons:

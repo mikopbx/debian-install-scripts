@@ -8,6 +8,8 @@ srcDirName=$(downloadFile "$LIB_URL");
   {
     make all;
     make install;
+    insmod "$(modinfo dahdi | grep filename | awk -F ' ' ' { print $2} ')"
+    insmod "$(modinfo dahdi_transcode | grep filename | awk -F ' ' ' { print $2} ')"
   } >> "$LOG_FILE" 2>> "$LOG_FILE";
 )
 

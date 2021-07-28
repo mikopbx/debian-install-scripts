@@ -7,14 +7,15 @@ SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
     apt-get install busybox && \
-    apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
+    apt-get install "linux-image-$(uname -r)" && \
     cd /root/install && \
     sh ./install.sh && \
     ln -s /bin/busybox /bin/ifconfig && \
     ln -s /bin/busybox /bin/ping && \
     ln -s /bin/busybox /bin/route && \
-    ln -s /usr/sbin/cron /usr/sbin/crond \
+    ln -s /usr/sbin/cron /usr/sbin/crond && \
     rm -rf /bin/ps && ln -s /bin/busybox /bin/ps && \
+    chmod +x /root/install/entrypoint.sh && \
     touch /etc/docker
 
 CMD ["/etc/rc/bootup", ""]

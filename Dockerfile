@@ -15,6 +15,6 @@ RUN apt-get update && \
     touch /etc/docker
 
 
-ENTRYPOINT ["sh", "/root/install/entrypoint"]
+ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]
 ### Networking configuration
 EXPOSE 80 443 5060/udp 5060/tcp 5038 8088 8089 10000-11000/udp

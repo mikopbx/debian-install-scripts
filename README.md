@@ -3,7 +3,7 @@
 ## Полезные команды Docker
 #### Запуск контейнера и назначение имени "mikopbx"
 `docker run --net=host --name mikopbx -it -d --rm mikopbx:7`
-`docker run --net=host --name mikopbx --device /dev/dahdi/transcode --device /dev/dahdi/channel --device /dev/dahdi/ctl --device /dev/dahdi/pseudo --device /dev/dahdi/timer -it -d --rm mikopbx:10 entrypoint`
+`docker run --net=host --name mikopbx --device /dev/dahdi/transcode --device /dev/dahdi/channel --device /dev/dahdi/ctl --device /dev/dahdi/pseudo --device /dev/dahdi/timer -it -d --rm mikopbx:11 entrypoint`
 #### Список запущенных контейнеров
 `docker ps`
 #### Завершить процесс

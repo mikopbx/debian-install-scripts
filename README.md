@@ -2,7 +2,7 @@
 
 ## Полезные команды Docker
 #### Запуск контейнера и назначение имени "mikopbx"
-`docker run --net=host --privileged --name mikopbx -it -d --rm mikopbx:3`
+`docker run --net=host --privileged --name mikopbx -it -d --rm mikopbx:5`
 #### Список запущенных контейнеров
 `docker ps`
 #### Завершить процесс

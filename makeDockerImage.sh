@@ -28,6 +28,7 @@ pathP3="/mnt/p3";
 pathRoot="/mnt/mikopbx";
 
 loopName=$(kpartx -a -v "${imgName}" | cut -d ' ' -f 3 | awk -F 'p'  '{print $1 "p" $2}' | uniq);
+rm -rf "$pathP1" "$pathP2" "$pathP3" "$pathRoot";
 mkdir -p "$pathP1" "$pathP2" "$pathP3" "$pathRoot";
 mount "/dev/mapper/${loopName}p1" "$pathP1";
 mount "/dev/mapper/${loopName}p2" "$pathP2";
@@ -56,13 +57,12 @@ ln -s /offload/rootfs/usr "$pathRoot/usr";
 ln -s /sys/bus/usb "$pathRoot/dev/bus/usb";
 ln -s "/offload/rootfs/usr/www/src/Core/Rc" "$pathRoot/etc/rc"
 cp -R "$pathP2/"* "$pathRoot/offload/";
-cp "$pathRoot/conf.default/mikop bx.db" "$pathRoot/cf/conf/";
+cp "$pathRoot/conf.default/mikopbx.db" "$pathRoot/cf/conf/";
 cp "$pathRoot/offload/rootfs/usr/www/config/mikopbx-settings.json" "$pathRoot/etc/inc/";
-touch "$pathRoot/etc/docker";
 
 (
   cd "$pathRoot" || exit 3;
-  tar -c . | docker import - mikopbx:11
+  tar -c . | docker import --change 'ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]' - mikopbx:11
 );
 kpartx -d "${imgName}";
 umount "/dev/mapper/${loopName}p1";

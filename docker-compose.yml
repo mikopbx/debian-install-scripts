@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  mikopbx:
+    container_name: "mikopbx"
+    image: "mikopbx:11"
+    network_mode: "host"
+    command: '-d'
+    volumes:
+      - /var/spool/mikopbx/cf:/cf
+      - /var/spool/mikopbx/storage:/storage
+    devices:
+      - "/dev/dahdi/transcode:/dev/dahdi/transcode"
+      - "/dev/dahdi/channel:/dev/dahdi/channel"
+      - "/dev/dahdi/ctl:/dev/dahdi/ctl"
+      - "/dev/dahdi/pseudo:/dev/dahdi/pseudo"
+      - "/dev/dahdi/timer:/dev/dahdi/timer"

@@ -17,15 +17,18 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-imgName=$1;
+imgName="$1";
 if [ ! -f "$imgName" ]; then
   exit 1;
 fi;
 
-pathP1="/mnt/p1";
-pathP2="/mnt/p2";
-pathP3="/mnt/p3";
-pathRoot="/mnt/mikopbx";
+resultFile="$3";
+workDir="$(dirname "$1")";
+
+pathP1="$workDir/mnt/p1";
+pathP2="$workDir/mnt/p2";
+pathP3="$workDir/mnt/p3";
+pathRoot="$workDir/mnt/mikopbx";
 
 loopName=$(kpartx -a -v "${imgName}" | cut -d ' ' -f 3 | awk -F 'p'  '{print $1 "p" $2}' | uniq);
 rm -rf "$pathP1" "$pathP2" "$pathP3" "$pathRoot";
@@ -62,9 +65,12 @@ cp "$pathRoot/offload/rootfs/usr/www/config/mikopbx-settings.json" "$pathRoot/et
 
 (
   cd "$pathRoot" || exit 3;
-  tar -c . | docker import --change 'ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]' - mikopbx:11
+  tar -c -f "$resultFile" .
+  # docker import --change 'ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]' - mikopbx:11
 );
 kpartx -d "${imgName}";
 umount "/dev/mapper/${loopName}p1";
 umount "/dev/mapper/${loopName}p2";
 umount "/dev/mapper/${loopName}p3";
+rm -rf "$pathP1" "$pathP2" "$pathP3" "$pathRoot";
+

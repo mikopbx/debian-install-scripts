@@ -1,15 +1,33 @@
 # debian-install-scripts
 
+## Быстрый старт
+### Создать bridge подсеть
+`docker network create mikopbx-bridge`
+### Запустить контейнер
+`
+docker run --cap-add=NET_ADMIN \
+            --network mikopbx-bridge \
+            --name mikopbx \
+            -v /var/spool/mikopbx/cf:/cf \
+            -v /var/spool/mikopbx/storage:/storage \
+            --publish 8080:80 \
+            --publish 5060:5060 \
+            -p 10000-10400:10000-10400 \
+            -it -d --rm mikopbx:13
+`
+
+### Подключиться к запущенному контейнеру
+`docker exec -it mikopbx sh`
+
 ## Полезные команды Docker
+
 #### Запуск контейнера и назначение имени "mikopbx"
-`docker run --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage -it -d --rm mikopbx:12`
-`docker run --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage --device /dev/dahdi/transcode --device /dev/dahdi/channel --device /dev/dahdi/ctl --device /dev/dahdi/pseudo --device /dev/dahdi/timer -it -d --rm mikopbx:11`
+`docker run --cap-add=NET_ADMIN --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage -it -d --rm mikopbx:13`
+`docker run --cap-add=NET_ADMIN --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage --device /dev/dahdi/transcode --device /dev/dahdi/channel --device /dev/dahdi/ctl --device /dev/dahdi/pseudo --device /dev/dahdi/timer -it -d --rm mikopbx:11`
 #### Список запущенных контейнеров
 `docker ps`
 #### Завершить процесс
 `docker kill mikopbx`
-#### Подключиться к запущенному контейнеру
-`docker exec -it mikopbx sh`
 #### Все запущенные контейнеры
 `docker ps -qa`
 #### Удалить все контейнеры
@@ -18,7 +36,7 @@
 `docker rm $(docker ps -qa)`
 
 #### Импорт контейнера.
-docker import --change 'ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]' /tmp/2021.3.1-mikopbx-generic-x86-64-linux.tar mikopbx:12
+docker import --change 'ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]' /tmp/2021.3.1-mikopbx-generic-x86-64-linux.tar mikopbx:13
 
 #### Удалить все процессы. 
 ps | grep -v 'docker-entrypoint' | grep -v '/bin/tail -f /dev/null' | grep -v 'PID' | cut -d ' ' -f 1 | xargs kill

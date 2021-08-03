@@ -2,15 +2,18 @@ version: "3.9"
 services:
   mikopbx:
     container_name: "mikopbx"
-    image: "mikopbx:11"
+    image: "mikopbx:13"
     network_mode: "host"
     command: '-d'
+    cap_add:
+      - NET_ADMIN
     volumes:
       - /var/spool/mikopbx/cf:/cf
       - /var/spool/mikopbx/storage:/storage
-    devices:
-      - "/dev/dahdi/transcode:/dev/dahdi/transcode"
-      - "/dev/dahdi/channel:/dev/dahdi/channel"
-      - "/dev/dahdi/ctl:/dev/dahdi/ctl"
-      - "/dev/dahdi/pseudo:/dev/dahdi/pseudo"
-      - "/dev/dahdi/timer:/dev/dahdi/timer"
+    # DAHDI не обязательное условие. Он необходим для работы MeetMe в панели телефонии.
+    # devices:
+    #  - "/dev/dahdi/transcode:/dev/dahdi/transcode"
+    #  - "/dev/dahdi/channel:/dev/dahdi/channel"
+    #  - "/dev/dahdi/ctl:/dev/dahdi/ctl"
+    #  - "/dev/dahdi/pseudo:/dev/dahdi/pseudo"
+    #  - "/dev/dahdi/timer:/dev/dahdi/timer"

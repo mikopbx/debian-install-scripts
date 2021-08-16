@@ -16,6 +16,11 @@ docker run --cap-add=NET_ADMIN \
             -it -d --rm mikopbx:13
 `
 
+### Отправляем на github
+`echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin`
+`cat /root/2021.4.2-mikopbx-generic-x86-64-linux.tar | docker import --change 'ENTRYPOINT ["sh", "/sbin/docker-entrypoint"]' --change 'LABEL org.opencontainers.image.source https://github.com/mikopbx/Core' - ghcr.io/boffart/mikopbx:2021.4.2.dev.x86-64`
+`docker push ghcr.io/boffart/mikopbx:2021.4.2.dev.x86-64`
+
 ### Подключиться к запущенному контейнеру
 `docker exec -it mikopbx sh`
 
@@ -23,6 +28,7 @@ docker run --cap-add=NET_ADMIN \
 
 #### Запуск контейнера и назначение имени "mikopbx"
 `docker run --cap-add=NET_ADMIN --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage -it -d --rm mikopbx:13`
+`docker run --cap-add=NET_ADMIN --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage -it -d --rm ghcr.io/boffart/mikopbx:2021.4.2.dev.x86-64`
 `docker run --cap-add=NET_ADMIN --net=host --name mikopbx -v /var/spool/mikopbx/cf:/cf -v /var/spool/mikopbx/storage:/storage --device /dev/dahdi/transcode --device /dev/dahdi/channel --device /dev/dahdi/ctl --device /dev/dahdi/pseudo --device /dev/dahdi/timer -it -d --rm mikopbx:11`
 #### Список запущенных контейнеров
 `docker ps`
